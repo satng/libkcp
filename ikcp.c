@@ -28,6 +28,7 @@ const IUINT32 IKCP_CMD_PUSH = 81;		// cmd: push data
 const IUINT32 IKCP_CMD_ACK  = 82;		// cmd: ack
 const IUINT32 IKCP_CMD_WASK = 83;		// cmd: window probe (ask)
 const IUINT32 IKCP_CMD_WINS = 84;		// cmd: window size (tell)
+const IUINT32 IKCP_CMD_PING = 85;		// cmd: client testing ask server
 const IUINT32 IKCP_ASK_SEND = 1;		// need to send IKCP_CMD_WASK
 const IUINT32 IKCP_ASK_TELL = 2;		// need to send IKCP_CMD_WINS
 const IUINT32 IKCP_WND_SND = 32;
@@ -862,6 +863,24 @@ static int ikcp_wnd_unused(const ikcpcb *kcp)
 	return 0;
 }
 
+//---------------------------------------------------------------------
+// ikcp_ping  use only for client
+//---------------------------------------------------------------------
+void ikcp_ping(ikcpcb *kcp) {
+	IKCPSEG seg;
+	seg.conv = kcp->conv;
+	seg.cmd = IKCP_CMD_PING;
+	seg.frg = 0;
+	seg.wnd = 0;
+	seg.una = kcp->snd_nxt;
+	seg.len = 0;
+	seg.sn = 0;
+	seg.ts = 0;
+	char *ptr = (char*) ikcp_malloc(IKCP_OVERHEAD);
+	ikcp_encode_seg(ptr, &seg);
+	ikcp_output(kcp, ptr, IKCP_OVERHEAD);
+	ikcp_free(ptr);
+}
 
 //---------------------------------------------------------------------
 // ikcp_flush
