@@ -733,7 +733,7 @@ int ikcp_input(ikcpcb *kcp, const char *data, long size)
 		if ((long)size < (long)len) return -2;
 
 		if (cmd != IKCP_CMD_PUSH && cmd != IKCP_CMD_ACK &&
-			cmd != IKCP_CMD_WASK && cmd != IKCP_CMD_WINS) 
+			cmd != IKCP_CMD_WASK && cmd != IKCP_CMD_WINS && cmd != IKCP_CMD_PING) 
 			return -3;
 
 		kcp->rmt_wnd = wnd;
@@ -801,6 +801,9 @@ int ikcp_input(ikcpcb *kcp, const char *data, long size)
 				ikcp_log(kcp, IKCP_LOG_IN_WINS,
 					"input wins: %lu", (IUINT32)(wnd));
 			}
+		} else if (cmd == IKCP_CMD_PING) {
+			kcp->rcv_nxt = una;
+			return -4;
 		}
 		else {
 			return -3;
